@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🥔 Potato Detector</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .container {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #fef3c7 0%, #fed7aa 50%, #fef3c7 100%);
+            padding: 2rem;
+        }
+
+        .main-wrapper {
+            max-width: 48rem;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            animation: fade-in 0.6s ease-out;
+        }
+
+        .header-icon-wrapper {
+            display: inline-block;
+            padding: 1rem;
+            background: linear-gradient(135deg, #fbbf24 0%, #f97316 100%);
+            border-radius: 9999px;
+            margin-bottom: 1rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-icon {
+            width: 3rem;
+            height: 3rem;
+            color: white;
+        }
+
+        .header-title {
+            font-size: 3rem;
+            font-weight: bold;
+            background: linear-gradient(to right, #d97706, #ea580c);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+
+        .header-subtitle {
+            color: #4b5563;
+            font-size: 1.125rem;
+        }
+
+        .card {
+            background: white;
+            border-radius: 1.5rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            padding: 2rem;
+        }
+
+        .upload-area {
+            border: 4px dashed #fdba74;
+            border-radius: 1rem;
+            padding: 4rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .upload-area:hover {
+            border-color: #fb923c;
+            background-color: #fff7ed;
+        }
+
+        .upload-icon {
+            width: 4rem;
+            height: 4rem;
+            margin: 0 auto 1rem;
+            color: #fb923c;
+            transition: transform 0.3s;
+        }
+
+        .upload-area:hover .upload-icon {
+            transform: scale(1.1);
+        }
+
+        .upload-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 0.5rem;
+        }
+
+        .upload-subtitle {
+            color: #6b7280;
+        }
+
+        .preview-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .preview-wrapper {
+            position: relative;
+        }
+
+        .preview-image {
+            width: 100%;
+            height: 24rem;
+            object-fit: contain;
+            border-radius: 1rem;
+            background: #f9fafb;
+        }
+
+        .close-button {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            padding: 0.5rem;
+            background: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 9999px;
+            cursor: pointer;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            transition: background 0.3s;
+        }
+
+        .close-button:hover {
+            background: #dc2626;
+        }
+
+        .close-icon {
+            width: 1.25rem;
+            height: 1.25rem;
+        }
+
+        .analyze-button {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(to right, #f59e0b, #f97316);
+            color: white;
+            border: none;
+            border-radius: 0.75rem;
+            font-size: 1.125rem;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s;
+        }
+
+        .analyze-button:hover {
+            background: linear-gradient(to right, #d97706, #ea580c);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            transform: scale(1.05);
+        }
+
+        .loading-container {
+            text-align: center;
+            padding: 2rem 0;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 4rem;
+            height: 4rem;
+            border: 4px solid #fed7aa;
+            border-top-color: #f97316;
+            border-radius: 9999px;
+            animation: spin 1s linear infinite;
+        }
+
+        .loading-text {
+            margin-top: 1rem;
+            color: #4b5563;
+            font-weight: 500;
+        }
+
+        .error-box {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem;
+            background: #fef2f2;
+            border: 2px solid #fecaca;
+            border-radius: 0.75rem;
+        }
+
+        .error-icon {
+            width: 1.5rem;
+            height: 1.5rem;
+            color: #ef4444;
+            flex-shrink: 0;
+        }
+
+        .error-text {
+            color: #b91c1c;
+        }
+
+        .result-box {
+            padding: 2rem;
+            border-radius: 1rem;
+            text-align: center;
+            animation: bounce-in 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .result-potato {
+            background: linear-gradient(135deg, #f0fdf4 0%, #d1fae5 100%);
+            border: 4px solid #86efac;
+        }
+
+        .result-not-potato {
+            background: linear-gradient(135deg, #fef2f2 0%, #fecdd3 100%);
+            border: 4px solid #fca5a5;
+        }
+
+        .result-icon-wrapper {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 5rem;
+            height: 5rem;
+            border-radius: 9999px;
+            margin-bottom: 1rem;
+        }
+
+        .result-icon-potato {
+            background: #22c55e;
+        }
+
+        .result-icon-not-potato {
+            background: #ef4444;
+        }
+
+        .result-icon {
+            width: 3rem;
+            height: 3rem;
+            color: white;
+        }
+
+        .result-title {
+            font-size: 2.25rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .result-title-potato {
+            color: #15803d;
+        }
+
+        .result-title-not-potato {
+            color: #b91c1c;
+        }
+
+        .result-confidence {
+            font-size: 1.125rem;
+            color: #374151;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .result-score {
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+
+        .footer {
+            margin-top: 2rem;
+            text-align: center;
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @keyframes fade-in {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes bounce-in {
+            0% {
+                opacity: 0;
+                transform: scale(0.3);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+            70% {
+                transform: scale(0.9);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useRef } = React;
+
+        const Upload = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+            </svg>
+        );
+
+        const Camera = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+        );
+
+        const X = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+        );
+
+        const Check = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+        );
+
+        const AlertCircle = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01" />
+            </svg>
+        );
+
+        function PotatoClassifier() {
+            const [image, setImage] = useState(null);
+            const [preview, setPreview] = useState(null);
+            const [result, setResult] = useState(null);
+            const [loading, setLoading] = useState(false);
+            const [error, setError] = useState(null);
+            const fileInputRef = useRef(null);
+
+            const handleImageUpload = (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    setImage(file);
+                    setPreview(URL.createObjectURL(file));
+                    setResult(null);
+                    setError(null);
+                }
+            };
+
+            const classifyImage = async () => {
+                if (!image) return;
+
+                setLoading(true);
+                setError(null);
+
+                try {
+                    const formData = new FormData();
+                    formData.append('image', image);
+
+                    const response = await fetch('http://localhost:5000/classify', {
+                        method: 'POST',
+                        body: formData,
+                    });
+
+                    if (!response.ok) throw new Error('Classification failed');
+
+                    const data = await response.json();
+                    setResult(data);
+                } catch (err) {
+                    setError('Failed to classify image. Make sure your server is running on localhost:5000');
+                    console.error(err);
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            const reset = () => {
+                setImage(null);
+                setPreview(null);
+                setResult(null);
+                setError(null);
+                if (fileInputRef.current) fileInputRef.current.value = '';
+            };
+
+            return (
+                <div className="container">
+                    <div className="main-wrapper">
+                        <div className="header">
+                            <div className="header-icon-wrapper">
+                                <Camera className="header-icon" />
+                            </div>
+                            <h1 className="header-title">
+                                🥔 Potato Detector
+                            </h1>
+                            <p className="header-subtitle">
+                                Upload an image and let AI decide if it's a potato!
+                            </p>
+                        </div>
+
+                        <div className="card">
+                            {!preview ? (
+                                <div className="upload-area" onClick={() => fileInputRef.current?.click()}>
+                                    <Upload className="upload-icon" />
+                                    <p className="upload-title">
+                                        Click to upload an image
+                                    </p>
+                                    <p className="upload-subtitle">or drag and drop</p>
+                                    <input
+                                        ref={fileInputRef}
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={handleImageUpload}
+                                        className="hidden"
+                                    />
+                                </div>
+                            ) : (
+                                <div className="preview-container">
+                                    <div className="preview-wrapper">
+                                        <img
+                                            src={preview}
+                                            alt="Preview"
+                                            className="preview-image"
+                                        />
+                                        <button onClick={reset} className="close-button">
+                                            <X className="close-icon" />
+                                        </button>
+                                    </div>
+
+                                    {!result && !loading && (
+                                        <button onClick={classifyImage} className="analyze-button">
+                                            Analyze Image
+                                        </button>
+                                    )}
+
+                                    {loading && (
+                                        <div className="loading-container">
+                                            <div className="spinner"></div>
+                                            <p className="loading-text">
+                                                Analyzing your image...
+                                            </p>
+                                        </div>
+                                    )}
+
+                                    {error && (
+                                        <div className="error-box">
+                                            <AlertCircle className="error-icon" />
+                                            <p className="error-text">{error}</p>
+                                        </div>
+                                    )}
+
+                                    {result && (
+                                        <div className={`result-box ${result.is_potato ? 'result-potato' : 'result-not-potato'}`}>
+                                            <div className={`result-icon-wrapper ${result.is_potato ? 'result-icon-potato' : 'result-icon-not-potato'}`}>
+                                                {result.is_potato ? (
+                                                    <Check className="result-icon" />
+                                                ) : (
+                                                    <X className="result-icon" />
+                                                )}
+                                            </div>
+                                            <h2 className={`result-title ${result.is_potato ? 'result-title-potato' : 'result-title-not-potato'}`}>
+                                                {result.label || (result.is_potato ? "Yes, it's a potato! 🥔" : "Nope, not a potato! ❌")}
+                                            </h2>
+                                            <p className="result-confidence">
+                                                Confidence: {(result.confidence * 100).toFixed(1)}%
+                                            </p>
+                                            {result.raw_score !== undefined && (
+                                                <p className="result-score">
+                                                    Raw score: {result.raw_score.toFixed(4)}
+                                                </p>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="footer">
+                            <p>🔧 Make sure your backend server is running on localhost:5000</p>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        ReactDOM.render(<PotatoClassifier />, document.getElementById('root'));
+    </script>
+</body>
+</html>
